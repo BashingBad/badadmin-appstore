@@ -1,0 +1,327 @@
+{
+  "services": [
+    {
+      "name": "generator",
+      "image": "wazuh/wazuh-certs-generator:0.0.2",
+      "volumes": [
+        {
+          "hostPath": "./config/wazuh_indexer_ssl_certs/",
+          "containerPath": "/certificates/",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "./config/certs.yml",
+          "containerPath": "/config/certs.yml",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        }
+      ],
+      "hostname": "wazuh-certs-generator"
+    },
+    {
+      "name": "wazuh.manager",
+      "image": "wazuh/wazuh-manager:5.0.0",
+      "environment": {
+        "INDEXER_URL": "https://wazuh.indexer:9200",
+        "INDEXER_USERNAME": "admin",
+        "INDEXER_PASSWORD": "SecretPassword",
+        "FILEBEAT_SSL_VERIFICATION_MODE": "full",
+        "SSL_CERTIFICATE_AUTHORITIES": "/etc/ssl/root-ca.pem",
+        "SSL_CERTIFICATE": "/etc/ssl/filebeat.pem",
+        "SSL_KEY": "/etc/ssl/filebeat.key",
+        "API_USERNAME": "wazuh-wui",
+        "API_PASSWORD": "MyS3cr37P450r.*-"
+      },
+      "internalPort": 1514,
+      "addPorts": [
+        {
+          "containerPort": 1515,
+          "hostPort": 1515,
+          "tcp": true,
+          "udp": false
+        },
+        {
+          "containerPort": 514,
+          "hostPort": 514,
+          "tcp": false,
+          "udp": true
+        },
+        {
+          "containerPort": 55000,
+          "hostPort": 55000,
+          "tcp": true,
+          "udp": false
+        }
+      ],
+      "volumes": [
+        {
+          "hostPath": "wazuh_api_configuration",
+          "containerPath": "/var/ossec/api/configuration",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "wazuh_etc",
+          "containerPath": "/var/ossec/etc",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "wazuh_logs",
+          "containerPath": "/var/ossec/logs",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "wazuh_queue",
+          "containerPath": "/var/ossec/queue",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "wazuh_var_multigroups",
+          "containerPath": "/var/ossec/var/multigroups",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "wazuh_integrations",
+          "containerPath": "/var/ossec/integrations",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "wazuh_active_response",
+          "containerPath": "/var/ossec/active-response/bin",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "wazuh_agentless",
+          "containerPath": "/var/ossec/agentless",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "wazuh_wodles",
+          "containerPath": "/var/ossec/wodles",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "filebeat_etc",
+          "containerPath": "/etc/filebeat",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "filebeat_var",
+          "containerPath": "/var/lib/filebeat",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "./config/wazuh_indexer_ssl_certs/root-ca-manager.pem",
+          "containerPath": "/etc/ssl/root-ca.pem",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "./config/wazuh_indexer_ssl_certs/wazuh.manager.pem",
+          "containerPath": "/etc/ssl/filebeat.pem",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "./config/wazuh_indexer_ssl_certs/wazuh.manager-key.pem",
+          "containerPath": "/etc/ssl/filebeat.key",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "./config/wazuh_cluster/wazuh_manager.conf",
+          "containerPath": "/wazuh-config-mount/etc/ossec.conf",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        }
+      ],
+      "hostname": "wazuh.manager",
+      "ulimits": {
+        "memlock": {
+          "soft": -1,
+          "hard": -1
+        },
+        "nofile": {
+          "soft": 655360,
+          "hard": 655360
+        }
+      }
+    },
+    {
+      "name": "wazuh.indexer",
+      "image": "wazuh/wazuh-indexer:5.0.0",
+      "environment": {
+        "OPENSEARCH_JAVA_OPTS": "-Xms1g -Xmx1g"
+      },
+      "internalPort": 9200,
+      "volumes": [
+        {
+          "hostPath": "wazuh-indexer-data",
+          "containerPath": "/var/lib/wazuh-indexer",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "./config/wazuh_indexer_ssl_certs/root-ca.pem",
+          "containerPath": "/usr/share/wazuh-indexer/certs/root-ca.pem",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "./config/wazuh_indexer_ssl_certs/wazuh.indexer-key.pem",
+          "containerPath": "/usr/share/wazuh-indexer/certs/wazuh.indexer.key",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "./config/wazuh_indexer_ssl_certs/wazuh.indexer.pem",
+          "containerPath": "/usr/share/wazuh-indexer/certs/wazuh.indexer.pem",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "./config/wazuh_indexer_ssl_certs/admin.pem",
+          "containerPath": "/usr/share/wazuh-indexer/certs/admin.pem",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "./config/wazuh_indexer_ssl_certs/admin-key.pem",
+          "containerPath": "/usr/share/wazuh-indexer/certs/admin-key.pem",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "./config/wazuh_indexer/wazuh.indexer.yml",
+          "containerPath": "/usr/share/wazuh-indexer/opensearch.yml",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "./config/wazuh_indexer/internal_users.yml",
+          "containerPath": "/usr/share/wazuh-indexer/opensearch-security/internal_users.yml",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        }
+      ],
+      "hostname": "wazuh.indexer",
+      "ulimits": {
+        "memlock": {
+          "soft": -1,
+          "hard": -1
+        },
+        "nofile": {
+          "soft": 65536,
+          "hard": 65536
+        }
+      }
+    },
+    {
+      "name": "wazuh.dashboard",
+      "image": "wazuh/wazuh-dashboard:5.0.0",
+      "environment": {
+        "INDEXER_USERNAME": "admin",
+        "INDEXER_PASSWORD": "SecretPassword",
+        "WAZUH_API_URL": "https://wazuh.manager",
+        "DASHBOARD_USERNAME": "kibanaserver",
+        "DASHBOARD_PASSWORD": "kibanaserver",
+        "API_USERNAME": "wazuh-wui",
+        "API_PASSWORD": "MyS3cr37P450r.*-"
+      },
+      "internalPort": 5601,
+      "volumes": [
+        {
+          "hostPath": "./config/wazuh_indexer_ssl_certs/wazuh.dashboard.pem",
+          "containerPath": "/usr/share/wazuh-dashboard/certs/wazuh-dashboard.pem",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "./config/wazuh_indexer_ssl_certs/wazuh.dashboard-key.pem",
+          "containerPath": "/usr/share/wazuh-dashboard/certs/wazuh-dashboard-key.pem",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "./config/wazuh_indexer_ssl_certs/root-ca.pem",
+          "containerPath": "/usr/share/wazuh-dashboard/certs/root-ca.pem",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "./config/wazuh_dashboard/opensearch_dashboards.yml",
+          "containerPath": "/usr/share/wazuh-dashboard/config/opensearch_dashboards.yml",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "./config/wazuh_dashboard/wazuh.yml",
+          "containerPath": "/usr/share/wazuh-dashboard/data/wazuh/config/wazuh.yml",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "wazuh-dashboard-config",
+          "containerPath": "/usr/share/wazuh-dashboard/data/wazuh/config",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        },
+        {
+          "hostPath": "wazuh-dashboard-custom",
+          "containerPath": "/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom",
+          "readOnly": false,
+          "shared": false,
+          "private": false
+        }
+      ],
+      "hostname": "wazuh.dashboard",
+      "dependsOn": {
+        "wazuh.indexer": {
+          "condition": "service_started"
+        }
+      }
+    }
+  ]
+}
