@@ -1,6 +1,8 @@
 {
   "id": "wazuh",
   "name": "Wazuh",
+  "available": true,
+  "exposable": true,
   "version": "4.12.0",
   "description": "Plataforma SIEM para detección de amenazas, monitoring y respuesta.",
   "short_desc": "SIEM open-source con Elastic Stack",
